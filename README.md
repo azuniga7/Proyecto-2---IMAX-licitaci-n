@@ -1,1 +1,1 @@
-# Proyecto-2---IMAX-licitaci-n
+# Proyecto-2---IMAX-licitacion
