@@ -146,7 +146,7 @@ WHERE funcion_id = (SELECT funcion_id FROM funcion ORDER BY funcion_id OFFSET 20
 EXPLAIN (ANALYZE, BUFFERS)
 SELECT usuario_id, accion, count(*)
 FROM admin_operacion_audit
-WHERE fecha >= now() - interval '1 month'
+WHERE fecha >= now() - interval '1 month' AND fecha <= now()
 GROUP BY usuario_id, accion;
 
 -- Consulta que NO mejora con un indice: metodos de pago (consulta analitica 3).

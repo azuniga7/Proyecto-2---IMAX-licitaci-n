@@ -15,7 +15,7 @@ EXCEPTION WHEN OTHERS THEN
 END $$;
 GRANT EXECUTE ON FUNCTION pg_temp.intentar(TEXT) TO PUBLIC;
 
-\echo '=== CLIENTE'
+SELECT '=== CLIENTE';
 SET ROLE rol_cliente;
 SELECT 'ver cartelera'               AS intento, pg_temp.intentar('SELECT * FROM v_cartelera')                         AS resultado
 UNION ALL SELECT 'ver mapa de asientos',          pg_temp.intentar('SELECT * FROM v_mapa_asientos')
@@ -29,7 +29,7 @@ UNION ALL SELECT 'cambiar tarifa con fn (debe fallar)', pg_temp.intentar('SELECT
 UNION ALL SELECT 'validar entrada (debe fallar)',   pg_temp.intentar('SELECT fn_validar_entrada(gen_random_uuid(),1,''P1'')');
 RESET ROLE;
 
-\echo '=== TAQUILLERO'
+SELECT '=== TAQUILLERO';
 SET ROLE rol_taquillero;
 SELECT 'ver su corte de caja'        AS intento, pg_temp.intentar('SELECT * FROM v_corte_caja')                         AS resultado
 UNION ALL SELECT 'crear sala (debe fallar)',        pg_temp.intentar('INSERT INTO sala(cine_id,nombre,capacidad) VALUES (1,''X'',10)')
@@ -40,7 +40,7 @@ UNION ALL SELECT 'otorgar cortesia (debe fallar)',  pg_temp.intentar('SELECT fn_
 UNION ALL SELECT 'validar entrada (debe fallar)',   pg_temp.intentar('SELECT fn_validar_entrada(gen_random_uuid(),1,''P1'')');
 RESET ROLE;
 
-\echo '=== OPERADOR DE SALA'
+SELECT '=== OPERADOR DE SALA';
 SET ROLE rol_operador_sala;
 SELECT 'validar entrada'             AS intento, pg_temp.intentar('SELECT fn_validar_entrada(gen_random_uuid(),1,''Puerta 1'')') AS resultado
 UNION ALL SELECT 'ver cartelera',                   pg_temp.intentar('SELECT * FROM v_cartelera')
@@ -48,7 +48,7 @@ UNION ALL SELECT 'vender boletos (debe fallar)',    pg_temp.intentar('SELECT fn_
 UNION ALL SELECT 'ver pagos (debe fallar)',         pg_temp.intentar('SELECT * FROM pago');
 RESET ROLE;
 
-\echo '=== CONTADOR'
+SELECT '=== CONTADOR';
 SET ROLE rol_contador;
 SELECT 'ver pagos y compras'         AS intento, pg_temp.intentar('SELECT * FROM pago') AS resultado
 UNION ALL SELECT 'ver ingresos por funcion',        pg_temp.intentar('SELECT * FROM v_ocupacion_funcion')
@@ -58,7 +58,7 @@ UNION ALL SELECT 'crear funcion (debe fallar)',     pg_temp.intentar('INSERT INT
 UNION ALL SELECT 'pagar una compra (debe fallar)',  pg_temp.intentar('SELECT fn_pagar_compra(1,1::smallint,true)');
 RESET ROLE;
 
-\echo '=== ADMINISTRADOR'
+SELECT '=== ADMINISTRADOR';
 SET ROLE rol_administrador;
 SELECT 'ver bitacora admin'          AS intento, pg_temp.intentar('SELECT * FROM admin_operacion_audit') AS resultado
 UNION ALL SELECT 'ver usuarios sin hash',           pg_temp.intentar('SELECT usuario_id, correo, rol_id FROM usuario')
@@ -66,10 +66,11 @@ UNION ALL SELECT 'ver hash de contrasena (debe fallar)', pg_temp.intentar('SELEC
 UNION ALL SELECT 'crear pelicula',                  pg_temp.intentar('INSERT INTO pelicula(titulo,sinopsis,duracion_min,clasificacion_id) VALUES (''Demo'',''Demo'',90,1)')
 UNION ALL SELECT 'crear funcion',                   pg_temp.intentar('INSERT INTO funcion(pelicula_id,sala_id,inicio,fin) VALUES (1,3,now()+interval ''9 days'',now()+interval ''9 days 2 hours'')')
 UNION ALL SELECT 'UPDATE directo de precio (debe fallar, se usa fn_cambiar_tarifa)', pg_temp.intentar('UPDATE tarifa SET precio = 1')
-UNION ALL SELECT 'cambiar precio con fn_cambiar_tarifa', pg_temp.intentar('SELECT fn_cambiar_tarifa(1,1,15,''demo de roles'')')
-UNION ALL SELECT 'cambiar regla de configuracion',  pg_temp.intentar('SELECT fn_cambiar_configuracion(1,''max_asientos_por_compra'',''6'',''demo de roles'')')
+UNION ALL SELECT 'cambiar precio con fn_cambiar_tarifa', pg_temp.intentar('SELECT fn_cambiar_tarifa(2021,1,15,''demo de roles'')')
+UNION ALL SELECT 'cambiar regla de configuracion',  pg_temp.intentar('SELECT fn_cambiar_configuracion(2021,''max_asientos_por_compra'',''6'',''demo de roles'')')
 UNION ALL SELECT 'borrar bitacora (debe fallar)',   pg_temp.intentar('DELETE FROM admin_operacion_audit')
 UNION ALL SELECT 'vender boletos (debe fallar)',    pg_temp.intentar('SELECT fn_pagar_compra(1,1::smallint,true)');
 RESET ROLE;
 
 ROLLBACK;
+
