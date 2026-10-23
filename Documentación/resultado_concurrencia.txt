@@ -1,0 +1,74 @@
+PRUEBA DE CONCURRENCIA - 2026-10-22 19:07:44 - 30 solicitudes simultaneas
+
+PRUEBA 1: 30 clientes bloquean el asiento 2 de la funcion 3601 (fn_bloquear_asiento)
+  hilo 01 | usuario      1 | RECHAZADO |   148.0 ms | El asiento no esta disponible
+  hilo 02 | usuario      2 | RECHAZADO |   147.7 ms | El asiento no esta disponible
+  hilo 03 | usuario      3 | EXITO     |   103.1 ms | asiento bloqueado
+  hilo 04 | usuario      4 | RECHAZADO |   167.1 ms | El asiento no esta disponible
+  hilo 05 | usuario      5 | RECHAZADO |   156.2 ms | El asiento no esta disponible
+  hilo 06 | usuario      6 | RECHAZADO |   154.0 ms | El asiento no esta disponible
+  hilo 07 | usuario      7 | RECHAZADO |   150.6 ms | El asiento no esta disponible
+  hilo 08 | usuario      8 | RECHAZADO |   157.5 ms | El asiento no esta disponible
+  hilo 09 | usuario      9 | RECHAZADO |   148.5 ms | El asiento no esta disponible
+  hilo 10 | usuario     10 | RECHAZADO |   147.0 ms | El asiento no esta disponible
+  hilo 11 | usuario     11 | RECHAZADO |   147.1 ms | El asiento no esta disponible
+  hilo 12 | usuario     12 | RECHAZADO |   146.2 ms | El asiento no esta disponible
+  hilo 13 | usuario     13 | RECHAZADO |   162.8 ms | El asiento no esta disponible
+  hilo 14 | usuario     14 | RECHAZADO |   178.2 ms | El asiento no esta disponible
+  hilo 15 | usuario     15 | RECHAZADO |   146.3 ms | El asiento no esta disponible
+  hilo 16 | usuario     16 | RECHAZADO |   145.6 ms | El asiento no esta disponible
+  hilo 17 | usuario     17 | RECHAZADO |   145.0 ms | El asiento no esta disponible
+  hilo 18 | usuario     18 | RECHAZADO |   160.3 ms | El asiento no esta disponible
+  hilo 19 | usuario     19 | RECHAZADO |   148.4 ms | El asiento no esta disponible
+  hilo 20 | usuario     20 | RECHAZADO |   144.8 ms | El asiento no esta disponible
+  hilo 21 | usuario     21 | RECHAZADO |   146.2 ms | El asiento no esta disponible
+  hilo 22 | usuario     22 | RECHAZADO |   181.1 ms | El asiento no esta disponible
+  hilo 23 | usuario     23 | RECHAZADO |   183.3 ms | El asiento no esta disponible
+  hilo 24 | usuario     24 | RECHAZADO |   168.2 ms | El asiento no esta disponible
+  hilo 25 | usuario     25 | RECHAZADO |   147.9 ms | El asiento no esta disponible
+  hilo 26 | usuario     26 | RECHAZADO |   182.5 ms | El asiento no esta disponible
+  hilo 27 | usuario     27 | RECHAZADO |   147.5 ms | El asiento no esta disponible
+  hilo 28 | usuario     28 | RECHAZADO |   162.6 ms | El asiento no esta disponible
+  hilo 29 | usuario     29 | RECHAZADO |   148.6 ms | El asiento no esta disponible
+  hilo 30 | usuario     30 | RECHAZADO |   158.5 ms | El asiento no esta disponible
+  Exitosos: 1   Rechazados: 29
+  Estado final del asiento: bloqueado, bloqueado por el usuario 3
+  Filas 'bloqueado' en asiento_auditoria_log durante la prueba: 1
+  RESULTADO PRUEBA 1: APROBADA
+
+PRUEBA 2: 30 inserciones del mismo boleto (funcion 3601, asiento 5)
+  hilo 01 | usuario      1 | RECHAZADO |   175.9 ms | llave duplicada viola restricción de unicidad «uq_boleto_asiento_activo»
+  hilo 02 | usuario      2 | RECHAZADO |   166.4 ms | llave duplicada viola restricción de unicidad «uq_boleto_asiento_activo»
+  hilo 03 | usuario      3 | RECHAZADO |   170.2 ms | llave duplicada viola restricción de unicidad «uq_boleto_asiento_activo»
+  hilo 04 | usuario      4 | RECHAZADO |   171.5 ms | llave duplicada viola restricción de unicidad «uq_boleto_asiento_activo»
+  hilo 05 | usuario      5 | RECHAZADO |   176.7 ms | llave duplicada viola restricción de unicidad «uq_boleto_asiento_activo»
+  hilo 06 | usuario      6 | RECHAZADO |   178.3 ms | llave duplicada viola restricción de unicidad «uq_boleto_asiento_activo»
+  hilo 07 | usuario      7 | RECHAZADO |   177.7 ms | llave duplicada viola restricción de unicidad «uq_boleto_asiento_activo»
+  hilo 08 | usuario      8 | RECHAZADO |   185.8 ms | llave duplicada viola restricción de unicidad «uq_boleto_asiento_activo»
+  hilo 09 | usuario      9 | RECHAZADO |   171.3 ms | llave duplicada viola restricción de unicidad «uq_boleto_asiento_activo»
+  hilo 10 | usuario     10 | RECHAZADO |   179.5 ms | llave duplicada viola restricción de unicidad «uq_boleto_asiento_activo»
+  hilo 11 | usuario     11 | RECHAZADO |   182.9 ms | llave duplicada viola restricción de unicidad «uq_boleto_asiento_activo»
+  hilo 12 | usuario     12 | RECHAZADO |   183.0 ms | llave duplicada viola restricción de unicidad «uq_boleto_asiento_activo»
+  hilo 13 | usuario     13 | RECHAZADO |   180.2 ms | llave duplicada viola restricción de unicidad «uq_boleto_asiento_activo»
+  hilo 14 | usuario     14 | RECHAZADO |   174.2 ms | llave duplicada viola restricción de unicidad «uq_boleto_asiento_activo»
+  hilo 15 | usuario     15 | RECHAZADO |   164.1 ms | llave duplicada viola restricción de unicidad «uq_boleto_asiento_activo»
+  hilo 16 | usuario     16 | RECHAZADO |   181.3 ms | llave duplicada viola restricción de unicidad «uq_boleto_asiento_activo»
+  hilo 17 | usuario     17 | RECHAZADO |   162.9 ms | llave duplicada viola restricción de unicidad «uq_boleto_asiento_activo»
+  hilo 18 | usuario     18 | RECHAZADO |   178.2 ms | llave duplicada viola restricción de unicidad «uq_boleto_asiento_activo»
+  hilo 19 | usuario     19 | RECHAZADO |   165.7 ms | llave duplicada viola restricción de unicidad «uq_boleto_asiento_activo»
+  hilo 20 | usuario     20 | RECHAZADO |   168.0 ms | llave duplicada viola restricción de unicidad «uq_boleto_asiento_activo»
+  hilo 21 | usuario     21 | RECHAZADO |   178.2 ms | llave duplicada viola restricción de unicidad «uq_boleto_asiento_activo»
+  hilo 22 | usuario     22 | RECHAZADO |   178.5 ms | llave duplicada viola restricción de unicidad «uq_boleto_asiento_activo»
+  hilo 23 | usuario     23 | RECHAZADO |   175.0 ms | llave duplicada viola restricción de unicidad «uq_boleto_asiento_activo»
+  hilo 24 | usuario     24 | RECHAZADO |   167.2 ms | llave duplicada viola restricción de unicidad «uq_boleto_asiento_activo»
+  hilo 25 | usuario     25 | RECHAZADO |   184.1 ms | llave duplicada viola restricción de unicidad «uq_boleto_asiento_activo»
+  hilo 26 | usuario     26 | RECHAZADO |   177.6 ms | llave duplicada viola restricción de unicidad «uq_boleto_asiento_activo»
+  hilo 27 | usuario     27 | EXITO     |    79.1 ms | boleto insertado
+  hilo 28 | usuario     28 | RECHAZADO |   179.3 ms | llave duplicada viola restricción de unicidad «uq_boleto_asiento_activo»
+  hilo 29 | usuario     29 | RECHAZADO |   165.6 ms | llave duplicada viola restricción de unicidad «uq_boleto_asiento_activo»
+  hilo 30 | usuario     30 | RECHAZADO |   173.8 ms | llave duplicada viola restricción de unicidad «uq_boleto_asiento_activo»
+  Exitosos: 1   Rechazados: 29
+  Boletos activos para ese asiento y funcion: 1
+  RESULTADO PRUEBA 2: APROBADA
+
+Limpieza hecha: el asiento y la compra de prueba quedaron como antes (las bitacoras no se borran, por la regla RN-20).
