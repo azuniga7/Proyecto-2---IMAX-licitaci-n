@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block titulo %}Precios y promociones{% endblock %}
+{% block contenido %}
+<h1>Precios y promociones</h1>
+{% include "admin_nav.html" %}
+
+<section class="tarjeta">
+  <h2>Matriz de precios de una función</h2>
+  <form class="en-linea" method="get">
+    <label>N.º de función <input type="number" name="funcion" min="1" value="{{ fid }}" required></label>
+    <button class="boton" type="submit">Ver precios</button>
+  </form>
+  {% if not info %}
+    {% if fid %}<p class="vacio">No existe una función con ese número.</p>{% endif %}
+    <p class="nota">Próximas funciones:</p>
+    <ul class="lista-funciones">
+      {% for p in proximas %}
+        <li><a href="{{ url_for('admin_precios', funcion=p.funcion_id) }}">#{{ p.funcion_id }} · {{ p.inicio|fechacorta }} {{ p.inicio|hora }} · {{ p.titulo }} · {{ p.cine }} / {{ p.sala }}</a></li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="meta"><b>#{{ info.funcion_id }} · {{ info.titulo }}</b> · {{ info.cine }} / {{ info.sala }} · {{ info.inicio|fechahora }}</p>
+    {% if not tarifas %}<p class="vacio">Esta función no tiene tarifas definidas.</p>{% else %}
+    <p class="nota">Cada cambio de precio exige un motivo y queda en la bitácora de auditoría con tu usuario y la fecha.</p>
+    <table class="tabla">
+      <thead><tr><th>Zona</th><th>Tipo de entrada</th><th class="num">Precio actual</th><th>Nuevo precio y motivo</th></tr></thead>
+      <tbody>
+      {% for t in tarifas %}
+        <tr>
+          <td>{{ t.zona }}</td><td>{{ t.tipo|replace('_', ' ')|capitalize }}</td><td class="num">{{ t.precio|dinero }}</td>
+          <td>
+            <form class="en-linea chico" method="post" action="{{ url_for('admin_precio_cambiar', tarifa_id=t.tarifa_id) }}">
+              <input type="hidden" name="funcion" value="{{ info.funcion_id }}">
+              <input type="number" name="precio" step="0.01" min="0" placeholder="Precio" required aria-label="Nuevo precio">
+              <input type="text" name="motivo" placeholder="Motivo" required aria-label="Motivo del cambio">
+              <button class="boton secundario" type="submit">Cambiar</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  {% endif %}
+</section>
+
+<div class="dos-col">
+  <section class="tarjeta">
+    <h2>Nueva promoción</h2>
+    <p class="nota">Se aplica sola a las compras cuya función cumpla el día de la semana y el rango de fechas.</p>
+    <form method="post" action="{{ url_for('admin_promo_crear') }}">
+      <label>Nombre <input type="text" name="nombre" maxlength="80" required></label>
+      <div class="dos-campos">
+        <label>Tipo
+          <select name="tipo" required><option value="2x1">2x1</option><option value="porcentaje">Porcentaje</option></select>
+        </label>
+        <label>Valor (% si es porcentaje) <input type="number" name="valor" step="0.01" min="0" max="100"></label>
+      </div>
+      <label>Día de la semana
+        <select name="dia_semana">
+          <option value="">Todos los días</option>
+          <option value="1">Lunes</option><option value="2">Martes</option><option value="3">Miércoles</option>
+          <option value="4">Jueves</option><option value="5">Viernes</option><option value="6">Sábado</option>
+          <option value="0">Domingo</option>
+        </select>
+      </label>
+      <div class="dos-campos">
+        <label>Vigente desde <input type="date" name="vigente_desde" required></label>
+        <label>Vigente hasta <input type="date" name="vigente_hasta" required></label>
+      </div>
+      <button class="boton" type="submit">Crear promoción</button>
+    </form>
+  </section>
+  <section class="tarjeta">
+    <h2>Promociones</h2>
+    {% if not promos %}<p class="vacio">No hay promociones.</p>{% else %}
+    <table class="tabla">
+      <thead><tr><th>Promoción</th><th>Vigencia</th><th></th></tr></thead>
+      <tbody>
+      {% for p in promos %}
+        <tr class="{{ 'inactiva' if not p.activa }}">
+          <td>{{ p.nombre }}<br><small>{{ p.tipo }}{% if p.valor is not none %} {{ p.valor }}%{% endif %}
+            · {{ ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'][p.dia_semana] if p.dia_semana is not none else 'todos los días' }}</small></td>
+          <td>{{ p.vigente_desde|fechalarga }}<br>{{ p.vigente_hasta|fechalarga }}</td>
+          <td><form method="post" action="{{ url_for('admin_promo_activa', promocion_id=p.promocion_id) }}">
+            <button class="enlace" type="submit">{{ 'Desactivar' if p.activa else 'Activar' }}</button></form></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block titulo %}Administración{% endblock %}
+{% block contenido %}
+<h1>Administración</h1>
+{% include "admin_nav.html" %}
+<div class="kpis">
+  <div class="kpi"><span>Películas activas</span><b>{{ r.peliculas }}</b></div>
+  <div class="kpi"><span>Funciones programadas</span><b>{{ r.funciones }}</b></div>
+  <div class="kpi"><span>Salas activas</span><b>{{ r.salas }}</b></div>
+  <div class="kpi"><span>Operaciones manuales (último mes)</span><b>{{ r.operaciones }}</b></div>
+</div>
+<div class="rejilla">
+  <a class="tarjeta acceso" href="{{ url_for('admin_peliculas') }}"><h2>Películas</h2>
+    <p class="nota">Alta de cartelera con sinopsis, clasificación, duración, póster y géneros.</p></a>
+  <a class="tarjeta acceso" href="{{ url_for('admin_funciones') }}"><h2>Funciones</h2>
+    <p class="nota">Asignar sala y horario (sin traslapes) y definir la matriz de precios.</p></a>
+  <a class="tarjeta acceso" href="{{ url_for('admin_precios') }}"><h2>Precios y promociones</h2>
+    <p class="nota">Cambiar tarifas (queda en la bitácora) y crear promociones 2x1 o por porcentaje.</p></a>
+  <a class="tarjeta acceso" href="{{ url_for('admin_salas') }}"><h2>Salas</h2>
+    <p class="nota">Crear salas con su mapa de asientos. No se tocan salas con ventas (RN-18).</p></a>
+  <a class="tarjeta acceso" href="{{ url_for('admin_operaciones') }}"><h2>Operaciones y bitácora</h2>
+    <p class="nota">Reembolso forzado, cambio de asiento, cortesías, configuración y bitácora de auditoría.</p></a>
+</div>
+{% endblock %}

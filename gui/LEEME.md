@@ -1,0 +1,61 @@
+# Interfaz web – Proyecto II IMAX (Flask + PostgreSQL)
+
+## Cómo correrla
+1. En pgAdmin (como postgres) corre, en este orden y después de 01 a 07 y 09 (datos):
+   - `11_app_gui.sql`  (login de la app y vistas de la compra)
+   - `12_login_seguro.sql`  (contraseñas reales y vista con promociones)
+2. En una terminal, dentro de la carpeta `gui`:
+       pip install -r requirements.txt
+       python app.py
+3. Abre http://127.0.0.1:5000 e inicia sesión.
+
+Variables de entorno opcionales (si tu base o contraseña son distintas):
+IMAX_DB_HOST, IMAX_DB_PORT, IMAX_DB_NAME (por defecto `imax`), IMAX_DB_USER (por defecto `app_imax`),
+IMAX_DB_PASSWORD (por defecto `imax_app_2026`, la del script 11), IMAX_SECRET_KEY.
+En cmd: `set IMAX_DB_PASSWORD=...`  En PowerShell: `$env:IMAX_DB_PASSWORD="..."`
+
+## Usuarios de prueba (contraseña = rol + 123)
+| Rol | Correo | Contraseña |
+|---|---|---|
+| Cliente | cliente1@demo.imax | cliente123 |
+| Taquillero | taquillero1@demo.imax | taquillero123 |
+| Operador de sala | operador_sala1@demo.imax | operador_sala123 |
+| Contador | contador1@demo.imax | contador123 |
+| Administrador | administrador1@demo.imax | administrador123 |
+(hay más: cliente2 a cliente2000, taquillero1 a 10, etc.)
+
+## Pantallas
+- Cartelera con filtros (película, género, ciudad, cine, clasificación, fecha)
+- Mapa de asientos en vivo (verde, gris, amarillo, azul) con temporizador de bloqueo
+- Pago simulado (desglose con promociones, campos de pago simulados que no se envían ni guardan)
+- Entrada digital con QR
+- Dashboard en vivo (se actualiza cada 15 s): contador y administrador
+- Administración (solo administrador): películas, funciones y horarios, precios y promociones, salas,
+  operaciones manuales (reembolso forzado, cambio de asiento, cortesía, configuración) y bitácora
+- Operador de sala: validar QR en puerta. Taquillero: venta en taquilla y corte de caja.
+
+## Cómo mostrar cada punto de la pauta
+1. Alta de cartelera: Administración > Películas > crear (sinopsis, clasificación, duración, póster, géneros).
+2. Salas y horarios: Administración > Funciones > elegir película, sala y hora, llenar la matriz de precios.
+   Para ver el rechazo por traslape, crea otra función en la misma sala y horario.
+3. Matriz de precios: Administración > Precios y promociones (cambiar un precio exige motivo y queda en bitácora).
+4. Exploración y filtrado: Cartelera (cliente) por ciudad/cine, fecha y género.
+5. Bloqueo temporal: en el mapa tocar asientos; aparece la cuenta regresiva. En otra ventana con otro cliente se ven en amarillo.
+6. Pago: aprobar genera entradas con QR; rechazar libera los asientos de inmediato.
+7. Check-in: iniciar sesión como operador, pegar el QR y la función. Un segundo intento dice "Entrada ya utilizada".
+   Solo deja entrar dentro de la tolerancia (30 min antes a 15 después, configurable).
+8. Consultas analíticas y EXPLAIN: scripts 08 y 10 en pgAdmin. El dashboard muestra las mismas métricas.
+9. Restricción de roles: iniciar sesión como cliente o taquillero y abrir http://127.0.0.1:5000/admin: lo rechaza.
+   Como contador, el dashboard muestra "permission denied" en el top de películas (la base lo niega).
+10. Bitácora: como administrador, hacer un reembolso forzado o un cambio de asiento y verlo en
+    Administración > Operaciones y bitácora (fecha, hora, ID y motivo).
+
+## Notas de diseño (para el documento)
+- Toda la lógica está en la base (funciones, triggers, vistas). La app solo las llama.
+- La app entra con el login `app_imax`, que no tiene permisos propios, y en cada petición hace
+  SET LOCAL ROLE al rol de PostgreSQL del usuario (script 07). Los permisos los decide la base.
+- Contraseñas guardadas con bcrypt (pgcrypto). El login lo hace fn_login_usuario, que nunca devuelve el hash.
+- Los datos del formulario de pago son simulados: los campos no tienen `name`, así que no se envían.
+- Limitaciones conocidas: no hay protección CSRF ni límite de intentos de login; las funciones de la base
+  reciben el id del usuario como parámetro y la app lo toma de la sesión. No hay registro de clientes nuevos.
+- Moneda: la constante MONEDA de app.py está vacía porque el enunciado no define moneda.

@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block titulo %}Cartelera{% endblock %}
+{% block contenido %}
+<h1>Cartelera</h1>
+{% if session.rol == 'taquillero' %}
+  <p class="nota">Modo taquilla: las ventas quedan registradas a tu nombre como vendedor.</p>
+{% endif %}
+
+<form class="filtros" method="get">
+  <label>Película
+    <input type="search" name="q" value="{{ f.q }}" placeholder="Título">
+  </label>
+  <label>Género
+    <select name="genero">
+      <option value="">Todos</option>
+      {% for g in opc.generos %}<option value="{{ g }}" {{ 'selected' if g == f.genero }}>{{ g }}</option>{% endfor %}
+    </select>
+  </label>
+  <label>Ciudad
+    <select name="ciudad">
+      <option value="">Todas</option>
+      {% for c in opc.ciudades %}<option value="{{ c }}" {{ 'selected' if c == f.ciudad }}>{{ c }}</option>{% endfor %}
+    </select>
+  </label>
+  <label>Cine
+    <select name="cine">
+      <option value="">Todos</option>
+      {% for c in opc.cines %}<option value="{{ c.cine_id }}" {{ 'selected' if c.cine_id|string == f.cine }}>{{ c.cine }}</option>{% endfor %}
+    </select>
+  </label>
+  <label>Clasificación
+    <select name="clasificacion">
+      <option value="">Todas</option>
+      {% for c in opc.clasificaciones %}<option value="{{ c }}" {{ 'selected' if c == f.clasificacion }}>{{ c }}</option>{% endfor %}
+    </select>
+  </label>
+  <label>Fecha
+    <input type="date" name="fecha" value="{{ f.fecha }}">
+  </label>
+  <div class="acciones">
+    <button class="boton" type="submit">Filtrar</button>
+    <a class="boton secundario" href="{{ url_for('cartelera', fecha='') }}">Ver todas las fechas</a>
+  </div>
+</form>
+
+{% if not peliculas %}
+  <p class="vacio">No hay funciones con esos filtros.</p>
+{% endif %}
+
+<div class="peliculas">
+  {% for p in peliculas %}
+  <article class="pelicula">
+    <div class="poster">
+      <span>{{ p.titulo[:1] }}</span>
+      {% if p.poster_url %}<img src="{{ p.poster_url }}" alt="" onerror="this.remove()">{% endif %}
+    </div>
+    <div class="info">
+      <h2>{{ p.titulo }} <small class="clasif">{{ p.clasificacion }}</small></h2>
+      <p class="meta">{{ p.duracion_min }} min · {{ p.generos_texto or 'Sin género' }}</p>
+      <p class="sinopsis">{{ p.sinopsis }}</p>
+      <div class="funciones">
+        {% for fu in p.funciones %}
+        <a class="chip" href="{{ url_for('funcion', funcion_id=fu.funcion_id) }}">
+          <b>{{ fu.inicio|fechacorta }} · {{ fu.inicio|hora }}</b>
+          <span>{{ fu.cine }} · {{ fu.sala }}</span>
+        </a>
+        {% endfor %}
+      </div>
+      {% if p.total > p.funciones|length %}
+        <p class="nota">Hay {{ p.total - p.funciones|length }} funciones más. Afina los filtros para verlas.</p>
+      {% endif %}
+    </div>
+  </article>
+  {% endfor %}
+</div>
+{% endblock %}

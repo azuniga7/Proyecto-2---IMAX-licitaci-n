@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block titulo %}Dashboard{% endblock %}
+{% macro sin_permiso(r) %}
+  <p class="sin-permiso">Tu rol no puede ver este reporte.<br><small>La base respondió: {{ r.error }}</small></p>
+{% endmacro %}
+{% block contenido %}
+<h1>Dashboard</h1>
+<p class="nota">Métricas en vivo: se actualizan solas cada 15 segundos. Última actualización: <b id="hora-act">ahora</b></p>
+
+<div id="vivo">
+<div class="kpis">
+  <div class="kpi"><span>Boletos vendidos (7 días)</span><b>{{ kpi.boletos }}</b></div>
+  <div class="kpi"><span>Ingresos (7 días)</span><b>{{ kpi.ingresos|dinero }}</b></div>
+</div>
+
+<div class="rejilla">
+  <section class="tarjeta">
+    <h2>Ventas por día (últimos 14 días)</h2>
+    {% if d.ventas.error %}{{ sin_permiso(d.ventas) }}
+    {% elif not d.ventas.filas %}<p class="vacio">Sin ventas en el periodo.</p>
+    {% else %}
+    <ul class="barras">
+      {% for r in d.ventas.filas %}
+      <li><span class="etq">{{ r.dia|fechacorta }}</span>
+          <span class="barra-fondo"><span class="barra-valor" style="width: {{ r.pct }}%"></span></span>
+          <span class="val">{{ r.boletos }} · {{ r.ingresos|dinero }}</span></li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </section>
+
+  <section class="tarjeta">
+    <h2>Top 5 películas (última semana)</h2>
+    {% if d.top.error %}{{ sin_permiso(d.top) }}
+    {% elif not d.top.filas %}<p class="vacio">Sin ventas en la última semana.</p>
+    {% else %}
+    <ul class="barras">
+      {% for r in d.top.filas %}
+      <li><span class="etq ancho">{{ r.titulo }}</span>
+          <span class="barra-fondo"><span class="barra-valor" style="width: {{ r.pct }}%"></span></span>
+          <span class="val">{{ r.boletos_vendidos }}</span></li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </section>
+
+  <section class="tarjeta">
+    <h2>Métodos de pago preferidos</h2>
+    {% if d.metodos.error %}{{ sin_permiso(d.metodos) }}
+    {% elif not d.metodos.filas %}<p class="vacio">Sin pagos aprobados.</p>
+    {% else %}
+    <ul class="barras">
+      {% for r in d.metodos.filas %}
+      <li><span class="etq ancho">{{ r.metodo_pago|replace('_', ' ')|capitalize }}</span>
+          <span class="barra-fondo"><span class="barra-valor" style="width: {{ r.porcentaje }}%"></span></span>
+          <span class="val">{{ r.porcentaje }}%</span></li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </section>
+
+  <section class="tarjeta">
+    <h2>Auditoría de operaciones críticas (último mes)</h2>
+    {% if d.auditoria.error %}{{ sin_permiso(d.auditoria) }}
+    {% elif not d.auditoria.filas %}<p class="vacio">Sin operaciones manuales en el último mes.</p>
+    {% else %}
+    <table class="tabla">
+      <thead><tr><th>Administrador</th><th>Acción</th><th class="num">Operaciones</th><th>Última</th></tr></thead>
+      <tbody>
+      {% for r in d.auditoria.filas %}
+        <tr><td>{{ r.administrador }}</td><td>{{ r.accion|replace('_', ' ') }}</td>
+            <td class="num">{{ r.operaciones }}</td><td>{{ r.ultima|fechahora }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  </section>
+</div>
+</div>
+
+<section class="tarjeta">
+  <h2>Ocupación y recaudación por función</h2>
+  <form class="en-linea" method="get">
+    <label>Consultar una función por número
+      <input type="number" name="funcion" min="1" value="{{ fid }}" placeholder="N.º de función">
+    </label>
+    <button class="boton" type="submit">Consultar</button>
+  </form>
+
+  {% if d.una %}
+    {% if d.una.error %}{{ sin_permiso(d.una) }}
+    {% elif not d.una.filas %}<p class="vacio">No existe una función con ese número.</p>
+    {% else %}
+      {% set r = d.una.filas[0] %}
+      <div class="resultado-una">
+        <b>#{{ r.funcion_id }} · {{ r.titulo }}</b> · {{ r.cine }} / {{ r.sala }} · {{ r.inicio|fechahora }}<br>
+        {{ r.asientos_vendidos }} de {{ r.capacidad }} asientos ({{ r.porcentaje_ocupacion }}%) · ingresos {{ r.ingresos|dinero }}
+      </div>
+    {% endif %}
+  {% endif %}
+
+  <h3>Funciones de las próximas 24 horas con más ocupación</h3>
+  <div id="vivo-ocupacion">
+  {% if d.ocupacion.error %}{{ sin_permiso(d.ocupacion) }}
+  {% elif not d.ocupacion.filas %}<p class="vacio">No hay funciones en las próximas 24 horas.</p>
+  {% else %}
+  <table class="tabla">
+    <thead><tr><th>N.º</th><th>Película</th><th>Cine / sala</th><th>Inicio</th>
+      <th class="num">Vendidos</th><th class="num">Ocupación</th><th class="num">Ingresos</th></tr></thead>
+    <tbody>
+    {% for r in d.ocupacion.filas %}
+      <tr><td>{{ r.funcion_id }}</td><td>{{ r.titulo }}</td><td>{{ r.cine }} / {{ r.sala }}</td>
+          <td>{{ r.inicio|fechahora }}</td><td class="num">{{ r.asientos_vendidos }}/{{ r.capacidad }}</td>
+          <td class="num">{{ r.porcentaje_ocupacion }}%</td><td class="num">{{ r.ingresos|dinero }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+  const ids = ["vivo", "vivo-ocupacion"];
+  async function actualizar() {
+    try {
+      const r = await fetch(location.href, { headers: { Accept: "text/html" } });
+      if (!r.ok || r.redirected) { return; }
+      const doc = new DOMParser().parseFromString(await r.text(), "text/html");
+      ids.forEach(function (id) {
+        const nuevo = doc.getElementById(id), actual = document.getElementById(id);
+        if (nuevo && actual) actual.innerHTML = nuevo.innerHTML;
+      });
+      document.getElementById("hora-act").textContent = new Date().toLocaleTimeString("es-CR");
+    } catch (e) { /* sin conexion: se reintenta */ }
+  }
+  setInterval(actualizar, 15000);
+  document.getElementById("hora-act").textContent = new Date().toLocaleTimeString("es-CR");
+})();
+</script>
+{% endblock %}

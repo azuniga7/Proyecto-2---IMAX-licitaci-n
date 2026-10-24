@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block titulo %}{{ titulo_pagina }}{% endblock %}
+{% block contenido %}
+<h1>{{ titulo_pagina }}</h1>
+{% if tabs %}
+<div class="pestanas">
+  <a class="{{ 'activa' if ver != 'pasadas' }}" href="{{ url_for('mis_entradas', ver='proximas') }}">Próximas</a>
+  <a class="{{ 'activa' if ver == 'pasadas' }}" href="{{ url_for('mis_entradas', ver='pasadas') }}">Pasadas</a>
+</div>
+{% else %}
+<p><button class="boton secundario" type="button" onclick="window.print()">Imprimir</button>
+   <a class="boton secundario" href="{{ url_for('cartelera') }}">Seguir comprando</a></p>
+{% endif %}
+
+{% if not boletos %}
+  <p class="vacio">No hay entradas para mostrar.</p>
+{% endif %}
+
+<div class="entradas">
+  {% for b in boletos %}
+  <article class="entrada {{ b.estado }}">
+    <div class="datos">
+      <h2>{{ b.titulo }}</h2>
+      <p>{{ b.cine }} · {{ b.sala }}</p>
+      <p class="cuando">{{ b.inicio|fechalarga }} · {{ b.inicio|hora }}</p>
+      <p>Fila <b>{{ b.fila }}</b> · Asiento <b>{{ b.numero }}</b> · {{ b.zona }}</p>
+      <p>{{ b.tipo_entrada|replace('_', ' ')|capitalize }} · {{ b.precio_final|dinero }}</p>
+      <span class="estado {{ b.estado }}">{{ 'Válida' if b.estado == 'valido' else 'Usada' }}</span>
+    </div>
+    <div class="qr">
+      {% if b.codigo_qr %}
+        <img src="{{ url_for('qr', codigo=b.codigo_qr|string) }}" alt="Código QR de la entrada" width="150" height="150">
+        <code>{{ b.codigo_qr }}</code>
+      {% endif %}
+    </div>
+  </article>
+  {% endfor %}
+</div>
+{% endblock %}

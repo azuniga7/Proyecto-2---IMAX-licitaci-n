@@ -1,0 +1,8 @@
+<div class="pestanas">
+  <a class="{{ 'activa' if seccion == 'inicio' }}" href="{{ url_for('admin_inicio') }}">Resumen</a>
+  <a class="{{ 'activa' if seccion == 'peliculas' }}" href="{{ url_for('admin_peliculas') }}">Películas</a>
+  <a class="{{ 'activa' if seccion == 'funciones' }}" href="{{ url_for('admin_funciones') }}">Funciones</a>
+  <a class="{{ 'activa' if seccion == 'precios' }}" href="{{ url_for('admin_precios') }}">Precios y promociones</a>
+  <a class="{{ 'activa' if seccion == 'salas' }}" href="{{ url_for('admin_salas') }}">Salas</a>
+  <a class="{{ 'activa' if seccion == 'operaciones' }}" href="{{ url_for('admin_operaciones') }}">Operaciones y bitácora</a>
+</div>

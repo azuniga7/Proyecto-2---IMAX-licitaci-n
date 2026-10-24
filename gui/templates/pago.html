@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block titulo %}Pago{% endblock %}
+{% block contenido %}
+<h1>Compra #{{ c.compra_id }}</h1>
+<div class="dos-col">
+  <section class="tarjeta">
+    <h2>Detalle</h2>
+    <table class="tabla">
+      <thead><tr><th>Función</th><th>Asiento</th><th>Entrada</th><th class="num">Precio</th></tr></thead>
+      <tbody>
+      {% for b in boletos %}
+        <tr>
+          <td>{{ b.titulo }}<br><small>{{ b.cine }} · {{ b.sala }} · {{ b.inicio|fechahora }}</small></td>
+          <td>Fila {{ b.fila }} · N.º {{ b.numero }}<br><small>{{ b.zona }}</small></td>
+          <td>{{ b.tipo_entrada|replace('_', ' ')|capitalize }}{% if b.promocion %}<br><small class="promo">Promoción: {{ b.promocion }}</small>{% endif %}</td>
+          <td class="num">{{ b.precio_final|dinero }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <dl class="totales">
+      <dt>Subtotal</dt><dd>{{ c.subtotal|dinero }}</dd>
+      <dt>Descuento</dt><dd>- {{ c.descuento|dinero }}</dd>
+      <dt>Cargo por servicio</dt><dd>{{ c.cargo_servicio|dinero }}</dd>
+      <dt class="grande">Total</dt><dd class="grande">{{ c.total|dinero }}</dd>
+    </dl>
+  </section>
+
+  <section class="tarjeta">
+    {% if c.estado == 'pendiente' %}
+      <h2>Pago simulado</h2>
+      <p class="nota">Es una simulación: no se piden datos de tarjeta ni se cobra dinero real.</p>
+      {% if c.segundos is not none %}
+        <p>Tiempo para pagar: <b id="cuenta" data-seg="{{ c.segundos }}">--:--</b></p>
+      {% endif %}
+      <form method="post">
+        <label>Método de pago
+          <select name="metodo" required>
+            {% for m in metodos %}<option value="{{ m.metodo_pago_id }}" data-metodo="{{ m.nombre }}">{{ m.nombre|replace('_', ' ')|capitalize }}</option>{% endfor %}
+          </select>
+        </label>
+        <div id="campos-pago">
+          <div data-grupo="tarjeta">
+            <label>Nombre del titular <input type="text" autocomplete="off" placeholder="Como aparece en la tarjeta"></label>
+            <label>Número de tarjeta <input type="text" inputmode="numeric" autocomplete="off" pattern="[0-9 ]{13,19}" placeholder="0000 0000 0000 0000"></label>
+            <div class="dos-campos">
+              <label>Vencimiento <input type="text" autocomplete="off" pattern="(0[1-9]|1[0-2])/[0-9]{2}" placeholder="MM/AA"></label>
+              <label>CVV <input type="password" inputmode="numeric" autocomplete="off" pattern="[0-9]{3,4}" placeholder="123"></label>
+            </div>
+          </div>
+          <div data-grupo="paypal">
+            <label>Correo de PayPal <input type="email" autocomplete="off" placeholder="correo@ejemplo.com"></label>
+          </div>
+          <div data-grupo="billetera_digital">
+            <label>Teléfono de la billetera <input type="tel" autocomplete="off" placeholder="8888 8888"></label>
+          </div>
+          <div data-grupo="transferencia">
+            <label>Número de comprobante <input type="text" autocomplete="off" placeholder="Referencia de la transferencia"></label>
+          </div>
+          <p class="nota">Datos simulados: se validan solo en el navegador. No se envían al servidor ni se guardan.</p>
+        </div>
+        <fieldset>
+          <legend>Respuesta de la pasarela (para la demo)</legend>
+          <label class="radio"><input type="radio" name="resultado" value="aprobar" checked> Aprobar el pago</label>
+          <label class="radio"><input type="radio" name="resultado" value="rechazar"> Rechazar el pago</label>
+        </fieldset>
+        <button class="boton" type="submit">Pagar {{ c.total|dinero }}</button>
+      </form>
+    {% else %}
+      <h2>Compra {{ c.estado }}</h2>
+      {% if c.estado == 'pagada' %}
+        <p>El pago ya fue aprobado.</p>
+        <p><a class="boton" href="{{ url_for('entradas_compra', compra_id=c.compra_id) }}">Ver entradas</a></p>
+      {% else %}
+        <p>Esta compra ya no se puede pagar. Los asientos fueron liberados.</p>
+        <p><a class="boton" href="{{ url_for('cartelera') }}">Volver a la cartelera</a></p>
+      {% endif %}
+    {% endif %}
+  </section>
+</div>
+{% endblock %}
+{% block scripts %}
+{% if c.estado == 'pendiente' %}
+<script>
+(function () {
+  const metodo = document.querySelector("select[name=metodo]");
+  const grupos = document.querySelectorAll("#campos-pago [data-grupo]");
+  function mostrar() {
+    const actual = metodo.options[metodo.selectedIndex].dataset.metodo;
+    grupos.forEach(function (g) {
+      const activo = g.dataset.grupo === actual;
+      g.hidden = !activo;
+      g.querySelectorAll("input").forEach(function (i) { i.disabled = !activo; i.required = activo; });
+    });
+  }
+  metodo.addEventListener("change", mostrar);
+  mostrar();
+})();
+</script>
+{% endif %}
+{% if c.estado == 'pendiente' and c.segundos is not none %}
+<script>
+(function () {
+  const el = document.getElementById("cuenta");
+  let seg = parseInt(el.dataset.seg, 10);
+  function pintar() {
+    const m = String(Math.floor(seg / 60)).padStart(2, "0");
+    const s = String(seg % 60).padStart(2, "0");
+    el.textContent = seg > 0 ? m + ":" + s : "vencido";
+    el.className = seg <= 30 ? "alerta" : "";
+  }
+  pintar();
+  setInterval(function () { if (seg > 0) { seg -= 1; pintar(); } }, 1000);
+})();
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block titulo %}Películas{% endblock %}
+{% block contenido %}
+<h1>Alta de cartelera</h1>
+{% include "admin_nav.html" %}
+<div class="dos-col">
+  <section class="tarjeta">
+    <h2>Nueva película</h2>
+    <form method="post" action="{{ url_for('admin_pelicula_crear') }}">
+      <label>Título <input type="text" name="titulo" maxlength="150" required></label>
+      <label>Sinopsis <textarea name="sinopsis" rows="4" required></textarea></label>
+      <div class="dos-campos">
+        <label>Duración (minutos) <input type="number" name="duracion_min" min="1" max="600" required></label>
+        <label>Clasificación
+          <select name="clasificacion_id" required>
+            {% for c in clasificaciones %}<option value="{{ c.clasificacion_id }}">{{ c.codigo }} (desde {{ c.edad_minima }} años)</option>{% endfor %}
+          </select>
+        </label>
+      </div>
+      <label>URL del póster (opcional) <input type="url" name="poster_url" maxlength="300" placeholder="https://..."></label>
+      <fieldset>
+        <legend>Géneros</legend>
+        <div class="checks">
+          {% for g in generos %}<label class="radio"><input type="checkbox" name="genero" value="{{ g.genero_id }}"> {{ g.nombre }}</label>{% endfor %}
+        </div>
+      </fieldset>
+      <button class="boton" type="submit">Crear película</button>
+    </form>
+  </section>
+  <section class="tarjeta">
+    <h2>Últimas películas</h2>
+    <table class="tabla">
+      <thead><tr><th>N.º</th><th>Título</th><th>Clasif.</th><th class="num">Min</th><th></th></tr></thead>
+      <tbody>
+      {% for p in peliculas %}
+        <tr class="{{ 'inactiva' if not p.activa }}">
+          <td>{{ p.pelicula_id }}</td>
+          <td>{{ p.titulo }}<br><small>{{ p.generos or 'Sin género' }}</small></td>
+          <td>{{ p.clasificacion }}</td><td class="num">{{ p.duracion_min }}</td>
+          <td><form method="post" action="{{ url_for('admin_pelicula_activa', pelicula_id=p.pelicula_id) }}">
+            <button class="enlace" type="submit">{{ 'Desactivar' if p.activa else 'Activar' }}</button></form></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </section>
+</div>
+{% endblock %}

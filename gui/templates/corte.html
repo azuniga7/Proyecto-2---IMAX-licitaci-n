@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block titulo %}Corte de caja{% endblock %}
+{% block contenido %}
+<h1>Corte de caja</h1>
+<div class="kpis">
+  <div class="kpi"><span>Ventas de hoy</span><b>{{ compras_hoy }}</b></div>
+  <div class="kpi"><span>Total de hoy</span><b>{{ total_hoy|dinero }}</b></div>
+</div>
+<section class="tarjeta">
+  <h2>Tus ventas en taquilla por día y método de pago</h2>
+  {% if not filas %}
+    <p class="vacio">Todavía no tienes ventas registradas.</p>
+  {% else %}
+  <table class="tabla">
+    <thead><tr><th>Día</th><th>Método de pago</th><th class="num">Compras</th><th class="num">Total</th></tr></thead>
+    <tbody>
+    {% for r in filas %}
+      <tr><td>{{ r.dia|fechalarga }}</td><td>{{ r.metodo_pago|replace('_', ' ')|capitalize }}</td>
+          <td class="num">{{ r.compras }}</td><td class="num">{{ r.total|dinero }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</section>
+{% endblock %}

@@ -75,3 +75,12 @@ SELECT a.usuario_id,
 FROM admin_operacion_audit a
 WHERE a.fecha >= now() - interval '1 month'
 ORDER BY a.usuario_id, a.fecha;
+
+
+-- Ingresos por semana
+SELECT date_trunc('week', dia)::date AS semana, sum(boletos) AS boletos, sum(ingresos) AS ingresos
+FROM v_ventas_diarias GROUP BY 1 ORDER BY 1 DESC;
+
+-- Ingresos por mes
+SELECT date_trunc('month', dia)::date AS mes, sum(boletos) AS boletos, sum(ingresos) AS ingresos
+FROM v_ventas_diarias GROUP BY 1 ORDER BY 1 DESC;

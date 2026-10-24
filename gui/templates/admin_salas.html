@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block titulo %}Salas{% endblock %}
+{% block contenido %}
+<h1>Gestión de salas</h1>
+{% include "admin_nav.html" %}
+
+<section class="tarjeta">
+  <h2>Salas de un cine</h2>
+  <form class="en-linea" method="get">
+    <label>Cine
+      <select name="cine" onchange="this.form.submit()">
+        {% for c in cines %}<option value="{{ c.cine_id }}" {{ 'selected' if c.cine_id|string == cine }}>{{ c.nombre }} · {{ c.ciudad }}</option>{% endfor %}
+      </select>
+    </label>
+  </form>
+  <table class="tabla">
+    <thead><tr><th>Sala</th><th class="num">Capacidad</th><th class="num">Zonas</th><th class="num">Asientos</th><th>Estado</th><th></th></tr></thead>
+    <tbody>
+    {% for s in salas %}
+      <tr class="{{ 'inactiva' if not s.activa }}">
+        <td>{{ s.nombre }}</td><td class="num">{{ s.capacidad }}</td><td class="num">{{ s.zonas }}</td><td class="num">{{ s.asientos }}</td>
+        <td>{{ 'Activa' if s.activa else 'Inactiva' }}{% if s.con_ventas %}<br><small>con ventas activas (RN-18)</small>{% endif %}</td>
+        <td class="acciones-fila">
+          <form method="post" action="{{ url_for('admin_sala_activa', sala_id=s.sala_id) }}">
+            <input type="hidden" name="cine" value="{{ cine }}">
+            <button class="enlace" type="submit">{{ 'Desactivar' if s.activa else 'Activar' }}</button></form>
+          <form method="post" action="{{ url_for('admin_sala_eliminar', sala_id=s.sala_id) }}"
+                onsubmit="return confirm('¿Eliminar el mapa de la sala {{ s.nombre }}? Si tiene ventas, la base lo rechazará.')">
+            <input type="hidden" name="cine" value="{{ cine }}">
+            <button class="enlace peligro" type="submit">Eliminar</button></form>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <p class="nota">Cambiar la distribución o eliminar una sala con entradas vendidas o reservadas lo bloquea la base de datos (RN-18). Activar o desactivar no cambia la distribución.</p>
+</section>
+
+<section class="tarjeta">
+  <h2>Nueva sala</h2>
+  <form method="post" action="{{ url_for('admin_sala_crear') }}">
+    <div class="cuatro-campos">
+      <label>Cine
+        <select name="cine_id" required>
+          {% for c in cines %}<option value="{{ c.cine_id }}" {{ 'selected' if c.cine_id|string == cine }}>{{ c.nombre }}</option>{% endfor %}
+        </select>
+      </label>
+      <label>Nombre <input type="text" name="nombre" maxlength="50" required></label>
+      <label>Filas (1 a 26) <input type="number" name="filas" min="1" max="26" required></label>
+      <label>Asientos por fila <input type="number" name="columnas" min="1" max="40" required></label>
+    </div>
+    <h3>Zonas (las filas de las zonas deben sumar el total de filas)</h3>
+    {% for i in (1, 2, 3) %}
+    <div class="dos-campos">
+      <label>Zona {{ i }}{{ ' (obligatoria)' if i == 1 else ' (opcional)' }}
+        <input type="text" name="z{{ i }}_nombre" maxlength="40" placeholder="platea, palco, VIP..." {{ 'required' if i == 1 }}></label>
+      <label>Filas de la zona {{ i }} <input type="number" name="z{{ i }}_filas" min="1" {{ 'required' if i == 1 }}></label>
+    </div>
+    {% endfor %}
+    <button class="boton" type="submit">Crear sala</button>
+  </form>
+</section>
+{% endblock %}

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}Cines IMAX{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header class="barra">
+  <a class="marca" href="{{ url_for('inicio') }}">IMAX <span>Cines</span></a>
+  {% if session.get('uid') %}
+  <nav>
+    {% if session.rol in ('cliente', 'taquillero') %}<a href="{{ url_for('cartelera') }}">Cartelera</a>{% endif %}
+    {% if session.rol == 'cliente' %}<a href="{{ url_for('mis_entradas') }}">Mis entradas</a>{% endif %}
+    {% if session.rol == 'taquillero' %}<a href="{{ url_for('corte') }}">Corte de caja</a>{% endif %}
+    {% if session.rol == 'operador_sala' %}<a href="{{ url_for('validar') }}">Validar entrada</a>{% endif %}
+    {% if session.rol in ('contador', 'administrador') %}<a href="{{ url_for('dashboard') }}">Dashboard</a>{% endif %}
+    {% if session.rol == 'administrador' %}<a href="{{ url_for('admin_inicio') }}">Administración</a>{% endif %}
+  </nav>
+  <div class="usuario">
+    <span>{{ session.nombre }} · <em>{{ session.rol|replace('_', ' ') }}</em></span>
+    <form method="post" action="{{ url_for('logout') }}"><button class="enlace" type="submit">Salir</button></form>
+  </div>
+  {% endif %}
+</header>
+<main>
+  {% for categoria, mensaje in get_flashed_messages(with_categories=true) %}
+    <div class="aviso {{ categoria }}">{{ mensaje }}</div>
+  {% endfor %}
+  {% block contenido %}{% endblock %}
+</main>
+{% block scripts %}{% endblock %}
+</body>
+</html>

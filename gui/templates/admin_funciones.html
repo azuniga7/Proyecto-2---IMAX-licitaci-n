@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block titulo %}Funciones{% endblock %}
+{% block contenido %}
+<h1>Funciones y horarios</h1>
+{% include "admin_nav.html" %}
+<section class="tarjeta">
+  <h2>Programar una función</h2>
+  <p class="nota">La base impide que dos funciones activas se traslapen en la misma sala. El fin se calcula con la duración de la película más los minutos de limpieza.</p>
+  <form method="post" action="{{ url_for('admin_funcion_crear') }}" id="form-funcion">
+    <div class="cuatro-campos">
+      <label>Película
+        <select name="pelicula_id" id="pelicula" required>
+          {% for p in peliculas %}<option value="{{ p.pelicula_id }}" data-dur="{{ p.duracion_min }}">{{ p.titulo }} ({{ p.duracion_min }} min)</option>{% endfor %}
+        </select>
+      </label>
+      <label>Sala
+        <select name="sala_id" id="sala" required>
+          <option value="">Elige una sala</option>
+          {% for s in salas %}<option value="{{ s.sala_id }}">{{ s.cine }} · {{ s.sala }}</option>{% endfor %}
+        </select>
+      </label>
+      <label>Inicio <input type="datetime-local" name="inicio" id="inicio" required></label>
+      <label>Limpieza (min) <input type="number" name="limpieza" id="limpieza" value="20" min="0" max="180" required></label>
+    </div>
+    <p class="nota" id="fin-estimado"></p>
+    <h3>Matriz de precios (zona por tipo de entrada)</h3>
+    <div id="matriz"><p class="nota">Elige una sala para ver sus zonas.</p></div>
+    <button class="boton" type="submit">Crear función</button>
+  </form>
+</section>
+
+<section class="tarjeta">
+  <h2>Funciones por venir</h2>
+  <form class="en-linea" method="get">
+    <label>Filtrar por cine
+      <select name="cine" onchange="this.form.submit()">
+        <option value="">Todos</option>
+        {% for c in cines %}<option value="{{ c.cine_id }}" {{ 'selected' if c.cine_id|string == cine }}>{{ c.nombre }}</option>{% endfor %}
+      </select>
+    </label>
+  </form>
+  <table class="tabla">
+    <thead><tr><th>N.º</th><th>Película</th><th>Cine / sala</th><th>Inicio</th><th>Fin</th><th></th></tr></thead>
+    <tbody>
+    {% for f in funciones %}
+      <tr class="{{ 'inactiva' if not f.activa }}">
+        <td>{{ f.funcion_id }}</td><td>{{ f.titulo }}</td><td>{{ f.cine }} / {{ f.sala }}</td>
+        <td>{{ f.inicio|fechahora }}</td><td>{{ f.fin|hora }}</td>
+        <td class="acciones-fila">
+          <a href="{{ url_for('admin_precios', funcion=f.funcion_id) }}">Precios</a>
+          {% if f.activa %}
+          <form method="post" action="{{ url_for('admin_funcion_cancelar', funcion_id=f.funcion_id) }}"
+                onsubmit="return confirm('¿Cancelar la función {{ f.funcion_id }}?')">
+            <button class="enlace" type="submit">Cancelar</button></form>
+          {% else %}<small>cancelada</small>{% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>window.CFG = {{ cfg|tojson }};</script>
+<script>
+(function () {
+  const sala = document.getElementById("sala");
+  const matriz = document.getElementById("matriz");
+  const pelicula = document.getElementById("pelicula");
+  const inicio = document.getElementById("inicio");
+  const limpieza = document.getElementById("limpieza");
+  const fin = document.getElementById("fin-estimado");
+
+  function pad(n) { return String(n).padStart(2, "0"); }
+  function estimarFin() {
+    const opt = pelicula.options[pelicula.selectedIndex];
+    if (!opt || !inicio.value) { fin.textContent = ""; return; }
+    const d = new Date(inicio.value);
+    d.setMinutes(d.getMinutes() + parseInt(opt.dataset.dur, 10) + (parseInt(limpieza.value, 10) || 0));
+    fin.textContent = "La función terminaría aproximadamente a las " + pad(d.getHours()) + ":" + pad(d.getMinutes()) +
+      " (" + pad(d.getDate()) + "/" + pad(d.getMonth() + 1) + ").";
+  }
+  [pelicula, inicio, limpieza].forEach(function (e) { e.addEventListener("input", estimarFin); });
+
+  sala.addEventListener("change", async function () {
+    matriz.replaceChildren();
+    if (!sala.value) { matriz.innerHTML = '<p class="nota">Elige una sala para ver sus zonas.</p>'; return; }
+    const r = await fetch("/api/admin/sala/" + sala.value + "/zonas");
+    const d = await r.json();
+    if (!d.ok || !d.zonas.length) { matriz.innerHTML = '<p class="nota">Esa sala no tiene zonas.</p>'; return; }
+    const tabla = document.createElement("table");
+    tabla.className = "tabla";
+    const cab = tabla.createTHead().insertRow();
+    cab.insertCell().outerHTML = "<th>Zona</th>";
+    window.CFG.tipos.forEach(function (t) { cab.insertCell().outerHTML = "<th>" + t.nombre + "</th>"; });
+    const cuerpo = tabla.createTBody();
+    d.zonas.forEach(function (z) {
+      const fila = cuerpo.insertRow();
+      fila.insertCell().textContent = z.nombre + " (" + z.asientos + " asientos)";
+      window.CFG.tipos.forEach(function (t) {
+        const input = document.createElement("input");
+        input.type = "number"; input.step = "0.01"; input.min = "0"; input.required = true;
+        input.name = "precio_" + z.id + "_" + t.id;
+        input.setAttribute("aria-label", "Precio " + z.nombre + " " + t.nombre);
+        fila.insertCell().appendChild(input);
+      });
+    });
+    matriz.appendChild(tabla);
+  });
+})();
+</script>
+{% endblock %}

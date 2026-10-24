@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block titulo %}{{ f.titulo }}{% endblock %}
+{% block contenido %}
+<a class="volver" href="{{ url_for('cartelera') }}">← Cartelera</a>
+<h1>{{ f.titulo }}</h1>
+<p class="meta">{{ f.cine }} · {{ f.sala }} · {{ f.inicio|fechalarga }} {{ f.inicio|hora }} · {{ f.clasificacion }} · {{ f.duracion_min }} min</p>
+
+<div class="sala-layout">
+  <section class="mapa-caja">
+    <div class="pantalla">PANTALLA</div>
+    <div id="mapa" class="mapa" aria-label="Mapa de asientos"><p class="nota">Cargando asientos…</p></div>
+    <ul class="leyenda">
+      <li><i class="asiento libre"></i> Disponible</li>
+      <li><i class="asiento ocupado"></i> Ocupado</li>
+      <li><i class="asiento otro"></i> Bloqueado por otro</li>
+      <li><i class="asiento mio"></i> Tu selección</li>
+    </ul>
+  </section>
+
+  <aside class="panel">
+    <h2>Tu selección</h2>
+    <p id="vacio" class="nota">Toca un asiento verde para reservarlo. Queda bloqueado unos minutos mientras pagas.</p>
+    <form id="form-compra" method="post" action="{{ url_for('comprar', funcion_id=f.funcion_id) }}" hidden>
+      <ul id="lista-sel" class="seleccion"></ul>
+      <p class="total">Total estimado: <b id="total">0.00</b></p>
+      <p class="nota" id="cuenta"></p>
+      <p class="nota">El total final (promociones y cargo por servicio) se calcula en el siguiente paso.</p>
+      <button class="boton" id="continuar" type="submit">Continuar al pago</button>
+    </form>
+  </aside>
+</div>
+<div id="toast" class="toast" hidden></div>
+{% endblock %}
+{% block scripts %}
+<script>window.CFG = {{ cfg|tojson }};</script>
+<script src="{{ url_for('static', filename='mapa.js') }}"></script>
+{% endblock %}

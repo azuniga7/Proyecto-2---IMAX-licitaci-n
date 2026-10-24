@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block titulo %}Operaciones y bitácora{% endblock %}
+{% block contenido %}
+<h1>Operaciones manuales y bitácora</h1>
+{% include "admin_nav.html" %}
+<p class="nota">Cada operación exige un motivo y deja una fila en la bitácora de auditoría con fecha, hora, tu ID y tu rol (RN-20). La bitácora no se puede modificar ni borrar.</p>
+
+<section class="tarjeta">
+  <h2>Buscar boletos de un cliente</h2>
+  <form class="en-linea" method="get">
+    <label>Correo del cliente <input type="email" name="correo" value="{{ correo }}" placeholder="cliente1@demo.imax" required></label>
+    <button class="boton" type="submit">Buscar</button>
+  </form>
+  {% if correo %}
+    {% if not boletos %}<p class="vacio">Ese cliente no tiene boletos.</p>{% else %}
+    <table class="tabla">
+      <thead><tr><th>Boleto</th><th>Película</th><th>Función</th><th>Inicio</th><th>Asiento</th><th>Estado</th><th class="num">Precio</th></tr></thead>
+      <tbody>
+      {% for b in boletos %}
+        <tr><td>{{ b.boleto_id }}</td><td>{{ b.titulo }}</td><td>{{ b.funcion_id }}</td><td>{{ b.inicio|fechahora }}</td>
+            <td>{{ b.fila }}{{ b.numero }}</td><td>{{ b.estado }}</td><td class="num">{{ b.precio_final|dinero }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  {% endif %}
+</section>
+
+<div class="rejilla">
+  <section class="tarjeta">
+    <h2>Reembolso forzado</h2>
+    <p class="nota">Ignora el límite de horas de la política. Solo para boletos válidos.</p>
+    <form method="post" action="{{ url_for('admin_op_reembolso') }}">
+      <label>N.º de boleto <input type="number" name="boleto_id" min="1" required></label>
+      <label>Motivo <input type="text" name="motivo" required></label>
+      <button class="boton" type="submit">Reembolsar</button>
+    </form>
+  </section>
+  <section class="tarjeta">
+    <h2>Cambio de asiento</h2>
+    <p class="nota">El nuevo asiento debe estar libre y en la misma zona.</p>
+    <form method="post" action="{{ url_for('admin_op_cambio_asiento') }}">
+      <label>N.º de boleto <input type="number" name="boleto_id" min="1" required></label>
+      <div class="dos-campos">
+        <label>Nueva fila <input type="text" name="fila" maxlength="3" required></label>
+        <label>Nuevo asiento <input type="number" name="numero" min="1" required></label>
+      </div>
+      <label>Motivo <input type="text" name="motivo" required></label>
+      <button class="boton" type="submit">Cambiar asiento</button>
+    </form>
+  </section>
+  <section class="tarjeta">
+    <h2>Otorgar cortesía</h2>
+    <p class="nota">Emite un boleto sin costo para un usuario registrado.</p>
+    <form method="post" action="{{ url_for('admin_op_cortesia') }}">
+      <div class="dos-campos">
+        <label>N.º de función <input type="number" name="funcion_id" min="1" required></label>
+        <label>Tipo de entrada
+          <select name="tipo_entrada_id">{% for t in tipos %}<option value="{{ t.tipo_entrada_id }}">{{ t.nombre|replace('_', ' ')|capitalize }}</option>{% endfor %}</select>
+        </label>
+      </div>
+      <div class="dos-campos">
+        <label>Fila <input type="text" name="fila" maxlength="3" required></label>
+        <label>Asiento <input type="number" name="numero" min="1" required></label>
+      </div>
+      <label>Correo del destinatario <input type="email" name="correo" required></label>
+      <label>Motivo <input type="text" name="motivo" required></label>
+      <button class="boton" type="submit">Otorgar</button>
+    </form>
+  </section>
+  <section class="tarjeta">
+    <h2>Configuración del sistema</h2>
+    <table class="tabla">
+      <thead><tr><th>Parámetro</th><th>Nuevo valor y motivo</th></tr></thead>
+      <tbody>
+      {% for c in config %}
+        <tr><td>{{ c.clave }}<br><small>actual: <b>{{ c.valor }}</b></small></td>
+          <td><form class="en-linea chico" method="post" action="{{ url_for('admin_op_configuracion') }}">
+            <input type="hidden" name="clave" value="{{ c.clave }}">
+            <input type="number" name="valor" min="0" placeholder="Valor" required aria-label="Nuevo valor de {{ c.clave }}">
+            <input type="text" name="motivo" placeholder="Motivo" required aria-label="Motivo">
+            <button class="boton secundario" type="submit">Guardar</button></form></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </section>
+</div>
+
+<section class="tarjeta">
+  <h2>Bitácora de auditoría (últimas 30)</h2>
+  {% if not bitacora %}<p class="vacio">Todavía no hay operaciones manuales.</p>{% else %}
+  <table class="tabla">
+    <thead><tr><th>Fecha y hora</th><th>ID</th><th>Administrador</th><th>Acción</th><th>Tabla</th><th>Registro</th><th>IP</th><th>Motivo</th></tr></thead>
+    <tbody>
+    {% for b in bitacora %}
+      <tr><td>{{ b.fecha|fechahora }}</td><td>{{ b.usuario_id }}</td><td>{{ b.administrador }}</td>
+          <td>{{ b.accion|replace('_', ' ') }}</td><td>{{ b.tabla_afectada }}</td><td>{{ b.registro_id }}</td>
+          <td>{{ b.ip or '' }}</td><td>{{ b.motivo or '' }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</section>
+{% endblock %}
