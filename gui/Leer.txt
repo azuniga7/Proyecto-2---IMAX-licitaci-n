@@ -16,7 +16,6 @@ En cmd: `set IMAX_DB_PASSWORD=...`  En PowerShell: `$env:IMAX_DB_PASSWORD="..."`
 
 ## Usuarios de prueba (contraseña = rol + 123)
 | Rol | Correo | Contraseña |
-|---|---|---|
 | Cliente | cliente1@demo.imax | cliente123 |
 | Taquillero | taquillero1@demo.imax | taquillero123 |
 | Operador de sala | operador_sala1@demo.imax | operador_sala123 |

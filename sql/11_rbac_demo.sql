@@ -66,7 +66,7 @@ UNION ALL SELECT 'ver hash de contrasena (debe fallar)', pg_temp.intentar('SELEC
 UNION ALL SELECT 'crear pelicula',                  pg_temp.intentar('INSERT INTO pelicula(titulo,sinopsis,duracion_min,clasificacion_id) VALUES (''Demo'',''Demo'',90,1)')
 UNION ALL SELECT 'crear funcion',                   pg_temp.intentar('INSERT INTO funcion(pelicula_id,sala_id,inicio,fin) VALUES (1,3,now()+interval ''9 days'',now()+interval ''9 days 2 hours'')')
 UNION ALL SELECT 'UPDATE directo de precio (debe fallar, se usa fn_cambiar_tarifa)', pg_temp.intentar('UPDATE tarifa SET precio = 1')
-UNION ALL SELECT 'cambiar precio con fn_cambiar_tarifa', pg_temp.intentar('SELECT fn_cambiar_tarifa(2021,1,15,''demo de roles'')')
+UNION ALL SELECT 'cambiar precio con fn_cambiar_tarifa', pg_temp.intentar('SELECT fn_cambiar_tarifa(2021,(SELECT min(tarifa_id) FROM tarifa),15,''demo de roles'')')
 UNION ALL SELECT 'cambiar regla de configuracion',  pg_temp.intentar('SELECT fn_cambiar_configuracion(2021,''max_asientos_por_compra'',''6'',''demo de roles'')')
 UNION ALL SELECT 'borrar bitacora (debe fallar)',   pg_temp.intentar('DELETE FROM admin_operacion_audit')
 UNION ALL SELECT 'vender boletos (debe fallar)',    pg_temp.intentar('SELECT fn_pagar_compra(1,1::smallint,true)');
