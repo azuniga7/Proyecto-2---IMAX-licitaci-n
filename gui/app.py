@@ -40,7 +40,7 @@ from psycopg2 import sql
 DB = dict(
     host=os.getenv("IMAX_DB_HOST", "localhost"),
     port=int(os.getenv("IMAX_DB_PORT", "5432")),
-    dbname=os.getenv("IMAX_DB_NAME", "imax"),
+    dbname=os.getenv("IMAX_DB_NAME", "IMAX"),
     user=os.getenv("IMAX_DB_USER", "app_imax"),
     password=os.getenv("IMAX_DB_PASSWORD", "imax_app_2026"),
 )
